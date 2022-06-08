@@ -27,13 +27,18 @@ class SeriesController extends Controller
 
     public function store(Request $request)
     {
-      $nomeSerie = $request->input('nome');
-      $serie = new Serie();
-      $serie->nome = $nomeSerie;
-      $serie->save();
+
+      Serie::create($request->all());
+      // $nomeSerie = $request->nome;
+      // $serie = new Serie();
+      // $serie->nome = $nomeSerie;
+      // $serie->save();
 
       //DB::insert('INSERT INTO series (nome) VALUES (?)', [$nomeSerie]);
-        return redirect('/series');
+      return redirect()->route('series.index');
+
+      //return to_route('series.index'); *** APENAS NO LARAVEL 9
+
       
     }
 }
