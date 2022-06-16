@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SeriesFormRequest;
 use App\Models\Serie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -10,68 +11,67 @@ use Illuminate\Support\Facades\DB;
 class SeriesController extends Controller
 {
 
-    public function index(Request $request)
-    {
-      $series = Serie::query()->orderBy('nome')->get();
-      $mensagemSucesso = session('mensagem.sucesso');
-      
-      //$request->session()->forget('mensagem.sucesso'); AO UTILIZAR O flash() NAO HA NECESSIDADE DO forget()
+  public function index(Request $request)
+  {
+    $series = Serie::query()->orderBy('nome')->get();
+    $mensagemSucesso = session('mensagem.sucesso');
 
-      //$series = Serie::all(); *** MOSTRA TODOS
-      //$series = DB::select('SELECT nome FROM series;'); *** SELECT DIRETAMENTE NO BANCO
-      //dd($series);
-  
-      return view('series.index')->with('series', $series)
-        ->with('mensagemSucesso', $mensagemSucesso);
-    }
+    //$request->session()->forget('mensagem.sucesso'); AO UTILIZAR O flash() NAO HA NECESSIDADE DO forget()
 
-    public function create()
-    {
-      return view('series.create');
-    }
+    //$series = Serie::all(); *** MOSTRA TODOS
+    //$series = DB::select('SELECT nome FROM series;'); *** SELECT DIRETAMENTE NO BANCO
+    //dd($series);
 
-    public function store(Request $request)
-    {
+    return view('series.index')->with('series', $series)
+      ->with('mensagemSucesso', $mensagemSucesso);
+  }
 
-      $serie = Serie::create($request->all());
-      //$request->session()->flash('mensagem.sucesso', "Série '{$serie->nome}' incluída com sucesso");
+  public function create()
+  {
+    return view('series.create');
+  }
 
-      // $nomeSerie = $request->nome;
-      // $serie = new Serie();
-      // $serie->nome = $nomeSerie;
-      // $serie->save();
+  public function store(SeriesFormRequest $request)
+  {
+    $serie = Serie::create($request->all());
+    //$request->session()->flash('mensagem.sucesso', "Série '{$serie->nome}' incluída com sucesso");
 
-      //DB::insert('INSERT INTO series (nome) VALUES (?)', [$nomeSerie]);
-      return redirect()->route('series.index')
-        ->with('mensagem.sucesso', "Série '{$serie->nome}' incluída com sucesso");
+    // $nomeSerie = $request->nome;
+    // $serie = new Serie();
+    // $serie->nome = $nomeSerie;
+    // $serie->save();
 
-      //return to_route('series.index'); *** APENAS NO LARAVEL 9
+    //DB::insert('INSERT INTO series (nome) VALUES (?)', [$nomeSerie]);
+    return redirect()->route('series.index')
+      ->with('mensagem.sucesso', "Série '{$serie->nome}' incluída com sucesso");
 
-      
-    }
+    //return to_route('series.index'); *** APENAS NO LARAVEL 9
 
-    public function destroy(Serie $series)
-    {
-      //Serie::destroy($request->series);
-      $series->delete();
-      //$request->session()->flash('mensagem.sucesso', "Série '{$series->nome}' removida com sucesso");
 
-      return redirect()->route('series.index')
-        ->with('mensagem.sucesso', "Série '{$series->nome}' removida com sucesso");
-    }
+  }
 
-    public function edit(Serie $series)
-    {
-      return view('series.edit')->with('serie', $series);
-    }
+  public function destroy(Serie $series)
+  {
+    //Serie::destroy($request->series);
+    $series->delete();
+    //$request->session()->flash('mensagem.sucesso', "Série '{$series->nome}' removida com sucesso");
 
-    public function update(Serie $series, Request $request)
-    {
-      //$series->nome = $request->nome;
-      $series->fill($request->all());
-      $series->save();
+    return redirect()->route('series.index')
+      ->with('mensagem.sucesso', "Série '{$series->nome}' removida com sucesso");
+  }
 
-      return redirect()->route('series.index')
-        ->with('mensagem.sucesso', "Série '{$series->nome}' atualizada com sucesso!");
-    }
+  public function edit(Serie $series)
+  {
+    return view('series.edit')->with('serie', $series);
+  }
+
+  public function update(Serie $series, SeriesFormRequest $request)
+  {
+    //$series->nome = $request->nome;
+    $series->fill($request->all());
+    $series->save();
+
+    return redirect()->route('series.index')
+      ->with('mensagem.sucesso', "Série '{$series->nome}' atualizada com sucesso!");
+  }
 }
