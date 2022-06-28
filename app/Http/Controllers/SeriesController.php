@@ -13,7 +13,8 @@ class SeriesController extends Controller
 
   public function index(Request $request)
   {
-    $series = Serie::query()->orderBy('nome')->get();
+    $series = Serie::all();
+    // $series = Serie::query()->orderBy('nome')->get(); ** CRIADO QBUILDER NA MODEL
     $mensagemSucesso = session('mensagem.sucesso');
 
     //$request->session()->forget('mensagem.sucesso'); AO UTILIZAR O flash() NAO HA NECESSIDADE DO forget()
@@ -62,6 +63,7 @@ class SeriesController extends Controller
 
   public function edit(Serie $series)
   {
+    dd($series->temporadas);
     return view('series.edit')->with('serie', $series);
   }
 
