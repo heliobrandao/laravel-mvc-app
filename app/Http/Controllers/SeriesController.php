@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SeriesFormRequest;
-use App\Models\Serie;
+use App\Models\Series;
+use App\Models\Season;
+use App\Models\Episode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +15,7 @@ class SeriesController extends Controller
 
   public function index(Request $request)
   {
-    $series = Serie::all();
+    $series = Series::all();
     // $series = Serie::query()->orderBy('nome')->get(); ** CRIADO QBUILDER NA MODEL
     $mensagemSucesso = session('mensagem.sucesso');
 
@@ -34,7 +36,28 @@ class SeriesController extends Controller
 
   public function store(SeriesFormRequest $request)
   {
-    $serie = Serie::create($request->all());
+    $serie = Series::create($request->all());
+    $seasons = [];
+    for ($i = 1; $i <= $request->seasonQty; $i++) {
+      $seasons[] = [
+        'series_id' => $serie->id,
+        'number' => $i,
+      ];
+    }
+    Season::insert($seasons);
+
+    $episodes = [];
+    foreach ($serie->seasons as $season) {
+
+      for ($j = 1; $j <= $request->episodesPerSeason; $j++) {
+        $episodes[] = [
+          'season_id' => $season->id,
+          'number' => $j
+        ];
+      }
+    }
+    Episode::insert($episodes);
+
     //$request->session()->flash('mensagem.sucesso', "Série '{$serie->nome}' incluída com sucesso");
 
     // $nomeSerie = $request->nome;
@@ -51,7 +74,7 @@ class SeriesController extends Controller
 
   }
 
-  public function destroy(Serie $series)
+  public function destroy(Series $series)
   {
     //Serie::destroy($request->series);
     $series->delete();
@@ -61,13 +84,13 @@ class SeriesController extends Controller
       ->with('mensagem.sucesso', "Série '{$series->nome}' removida com sucesso");
   }
 
-  public function edit(Serie $series)
+  public function edit(Series $series)
   {
-    dd($series->temporadas);
+    //dd($series->temporadas);
     return view('series.edit')->with('serie', $series);
   }
 
-  public function update(Serie $series, SeriesFormRequest $request)
+  public function update(Series $series, SeriesFormRequest $request)
   {
     //$series->nome = $request->nome;
     $series->fill($request->all());
