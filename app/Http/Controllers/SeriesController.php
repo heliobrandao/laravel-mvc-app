@@ -16,14 +16,8 @@ class SeriesController extends Controller
   public function index(Request $request)
   {
     $series = Series::all();
-    // $series = Serie::query()->orderBy('nome')->get(); ** CRIADO QBUILDER NA MODEL
     $mensagemSucesso = session('mensagem.sucesso');
 
-    //$request->session()->forget('mensagem.sucesso'); AO UTILIZAR O flash() NAO HA NECESSIDADE DO forget()
-
-    //$series = Serie::all(); *** MOSTRA TODOS
-    //$series = DB::select('SELECT nome FROM series;'); *** SELECT DIRETAMENTE NO BANCO
-    //dd($series);
 
     return view('series.index')->with('series', $series)
       ->with('mensagemSucesso', $mensagemSucesso);
@@ -36,50 +30,42 @@ class SeriesController extends Controller
 
   public function store(SeriesFormRequest $request)
   {
-    $serie = Series::create($request->all());
-    $seasons = [];
-    for ($i = 1; $i <= $request->seasonQty; $i++) {
-      $seasons[] = [
-        'series_id' => $serie->id,
-        'number' => $i,
-      ];
-    }
-    Season::insert($seasons);
-
-    $episodes = [];
-    foreach ($serie->seasons as $season) {
-
-      for ($j = 1; $j <= $request->episodesPerSeason; $j++) {
-        $episodes[] = [
-          'season_id' => $season->id,
-          'number' => $j
+    $serie = DB::transaction(function () use ($request, &$serie) {
+      $serie = Series::create($request->all());
+      $seasons = [];
+      for ($i = 1; $i <= $request->seasonQty; $i++) {
+        $seasons[] = [
+          'series_id' => $serie->id,
+          'number' => $i,
         ];
       }
-    }
-    Episode::insert($episodes);
+      Season::insert($seasons);
 
-    //$request->session()->flash('mensagem.sucesso', "Série '{$serie->nome}' incluída com sucesso");
+      $episodes = [];
+      foreach ($serie->seasons as $season) {
 
-    // $nomeSerie = $request->nome;
-    // $serie = new Serie();
-    // $serie->nome = $nomeSerie;
-    // $serie->save();
+        for ($j = 1; $j <= $request->episodesPerSeason; $j++) {
+          $episodes[] = [
+            'season_id' => $season->id,
+            'number' => $j
+          ];
+        }
+      }
+      Episode::insert($episodes);
 
-    //DB::insert('INSERT INTO series (nome) VALUES (?)', [$nomeSerie]);
+      return $serie;
+    });
+
+
     return redirect()->route('series.index')
       ->with('mensagem.sucesso', "Série '{$serie->nome}' incluída com sucesso");
 
     //return to_route('series.index'); *** APENAS NO LARAVEL 9
-
-
   }
 
   public function destroy(Series $series)
   {
-    //Serie::destroy($request->series);
     $series->delete();
-    //$request->session()->flash('mensagem.sucesso', "Série '{$series->nome}' removida com sucesso");
-
     return redirect()->route('series.index')
       ->with('mensagem.sucesso', "Série '{$series->nome}' removida com sucesso");
   }
